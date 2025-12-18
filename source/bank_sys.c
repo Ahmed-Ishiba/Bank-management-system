@@ -3,11 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void login() {
-    char username[50];
-    char password[50];
-    printf("Enter username: ");
-    scanf("%s", username);
-    printf("Enter password: ");
-    scanf("%s", password);
+void bank_system_init(void) {
+    // Initialization code for the bank system
+    printf("Bank system initialized.\n");
 }
