@@ -21,7 +21,7 @@ typedef struct {
 
 extern int check_exist(double acc_num);
 extern int check_status(double acc_num);
-
+extern int check_accountNumbers(double acc_num_1, double acc_num_2);
 
 
 extern void bank_system_init(void);

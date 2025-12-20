@@ -49,3 +49,6 @@ int check_status(double acc_num) {
     return 0; // Placeholder return value
 }
 
+int check_accountNumbers(double acc_num_1, double acc_num_2) {
+    return (acc_num_1 == acc_num_2);
+}
