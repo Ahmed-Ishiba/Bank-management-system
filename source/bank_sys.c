@@ -1,7 +1,10 @@
 #include "bank_sys.h"
+#include <ctype.h>
 
 account acc[100];
+
 double dailywithdraw[100] = {0};
+
 int count = 0;
 
 date getCurrentDate(void) {
@@ -75,9 +78,11 @@ int login() ///////TOCHECK
     char stored_username[50];
     char stored_password[50];
     int found ;
-     do{
+    
+    do{
     file = fopen("users.txt", "r");
     found = 0;
+    
     if (file == NULL)
     {
         printf("Error opening file.\n");
@@ -88,7 +93,7 @@ int login() ///////TOCHECK
         scanf("%s", username);
         printf("Enter password: ");
         scanf("%s", password);
-        while (fscanf(file, "%s %s", stored_username, stored_password) != EOF)
+    while (fscanf(file, "%s %s", stored_username, stored_password) != EOF)
         {
             if (strcmp(username, stored_username) == 0 && strcmp(password, stored_password) == 0)
             {
@@ -124,7 +129,7 @@ int check_accountNumbers(double acc_num_1, double acc_num_2) {
 
 void add (){
    FILE *fp = fopen("accounts.txt", "a");
-   
+    
     if (fp == NULL) {
          printf("Error opening file.\n");
          return;
@@ -132,7 +137,14 @@ void add (){
     account acc;
     printf("Enter account number: ");
     scanf("%s", acc.account_num);
+    // if(!isdigit(acc.account_num)){
+    //     printf("Account number must be numeric.\n");
+    //     fclose(fp);
+    //     return;
+
+    // }
     getchar(); 
+    
     char trans_name[100];
     snprintf(trans_name, sizeof(trans_name), "%s.txt", acc.account_num);
     FILE *transaction_fp = fopen(trans_name, "w");
@@ -291,7 +303,6 @@ void deposit()
         remove("temp.txt");
         return;
     }
-    /* ---------- FIRST PASS: count & check balance ---------- */
     while (fgets(line, sizeof(line), fp)) {
         char temp[256];
         strcpy(temp, line);
@@ -332,9 +343,13 @@ void deposit()
             char *mobile = strtok(NULL, ","); // mobile
             char *date_opened = strtok(NULL, ","); // date opened
             char *status = strtok(NULL, ","); // status
-            if(strcmp(status,"active")!=0)
+            printf("Status: %s\n", status);
+            if(!(strcmp(status," active")) && !(strcmp(status,"active")))
             {
             printf("Account is not active.\n");
+            fclose(fp);
+            fclose(temp_fp);
+            remove("temp.txt");
             return;
             }
             float current_balance;
@@ -538,6 +553,7 @@ void modify () {
 void menu(){
     int choice;
     int decision;
+    Load();                 
 
     while (1) {
     setColor(FOREGROUND_RED| FOREGROUND_INTENSITY);
@@ -669,17 +685,18 @@ void print() {
 }
 
 void printAccounts(account arr[], int n) {
-    printf("\n%-12s %-15s %-10s %-10s %-12s %-10s %-10s\n",
+    printf("\n%-12s %-18s %-22s %-15s %-14s %-6s %-20s\n",
            "AccNum", "Name", "Address", "Balance", "Mobile", "DateOpened", "Status");
-    printf("-------------------------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------------------------------------------\n");
     for(int i=0;i<n;i++){
-        printf("%-12s %-15s %-10s %-10.2f %-12s %-10s %-10s\n",
+        printf("%-12s %-18s %-22s %-15.2f %-14s %02d-%04d %-20s\n",
                arr[i].account_num,
                arr[i].name,
                arr[i].address,
                arr[i].balance,
                arr[i].mobile,
-               arr[i].date_opened,
+               arr[i].openingDate.month,
+               arr[i].openingDate.year,
                arr[i].status);
     }
 }
@@ -715,7 +732,7 @@ void save()
 
 void search()
 {
-    FILE *file;
+    FILE *file = fopen("accounts.txt", "r");
     char line[200];
     char accountNumber[50], name[50], email[50];
     char balance[50], phoneNumber[50], dateopened[50], status[50];
@@ -724,7 +741,7 @@ void search()
     printf("Enter Account Number to search: ");
     scanf("%s", searchAccountNumber);
 
-    file = fopen("accounts.txt", "r");
+    
     if (file == NULL)
     {
         printf("Error opening file.\n");
@@ -888,10 +905,12 @@ void Transfer(void) {
     }
     if(Snd_index == -1) {
         printf("Sender Account not found.\n");
+        
         return;
     }
     if(Rec_index == -1) {
         printf("Receiver Account not found.\n");
+        
         return;
     }
 
@@ -902,11 +921,11 @@ void Transfer(void) {
     }
 
     // Validate account status
-    if(strcmp(acc[Snd_index].status, "active") != 0) {
+    if(!(strcmp(acc[Snd_index].status, " active"))) {
         printf("Sender Account is not active.\n");
         return;
     }
-    if(strcmp(acc[Rec_index].status, "active") != 0) {
+    if(!(strcmp(acc[Rec_index].status, " active"))) {
         printf("Receiver Account is not active.\n");
         return;
     }
@@ -996,10 +1015,12 @@ void Withdraw() {
 
     if (amount <= 0) {
         printf("Invalid amount. Withdrawal amount must be positive.\n");
+        fclose(transaction_fp);
         return;
     }
     if (amount > 10000) {
         printf("Withdrawal amount exceeds the maximum limit of 10000.\n");
+        fclose(transaction_fp);
         return;
     }
 
@@ -1014,19 +1035,23 @@ void Withdraw() {
          if(index==-1)
          {
           printf("Account not found.\n");
+          fclose(transaction_fp);
           return;
          }
          if(strcmp(acc[index].status,"active")!=0)
             {
             printf("Account is not active.\n");
+            fclose(transaction_fp);
             return;
             }
         if (acc[index].balance < amount) {
         printf("No enough balance.\n");
+        fclose(transaction_fp);
         return;
         }
         if (!CheckDailyLimit(dailywithdraw[index], amount)) {
             printf("Daily withdrawal limit exceeded.\n");
+            fclose(transaction_fp);
             return;
         }
         acc[index].balance -= amount;

@@ -2,7 +2,6 @@
 
 
 int main(void) {
-    Load();                 
     if(!login())
         return 0;   
     menu();
