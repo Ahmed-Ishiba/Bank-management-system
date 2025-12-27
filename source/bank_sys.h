@@ -35,7 +35,9 @@ extern date getCurrentDate(void);
 
 extern void Load(void);
 
-extern void query_search(double acc_num);
+extern void deleteInactive(void);
+
+extern void deleteByDate(void);
 
 extern void search(void);
 

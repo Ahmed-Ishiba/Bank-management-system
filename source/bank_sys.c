@@ -200,7 +200,7 @@ void Delete() {
     float balance = 0.0;
     printf("Enter account number to delete: ");
     scanf("%s", target);
-    /* ---------- FIRST PASS: count & check balance ---------- */
+
     while (fgets(line, sizeof(line), fp)) {
         char temp[256];
         strcpy(temp, line);
@@ -530,9 +530,11 @@ void modify () {
     printf("Account number %s modified successfully.\n", target);
     return;
 }
+///////////////////////////////////////////////
 #define FOREGROUND_BLUE 0x0001
 #define FOREGROUND_RED 0x0004
 #define FOREGROUND_INTENSITY 0x0008
+///////////////////////////////////////////////
 void menu(){
     int choice;
     int decision;
@@ -552,7 +554,8 @@ void menu(){
     printf("9.TRANSFER\n");
     printf("10.REPORT\n");
     printf("11.PRINT\n");
-    printf("12.QUIT\n");
+    printf("12.DELETE MULTIPLE ACCOUNTS\n");
+    printf("13.QUIT\n");
     printf("Choose an option: ");
     scanf("%d",&choice);
 
@@ -564,7 +567,7 @@ void menu(){
             case 2:
             Delete();
             break;
-
+            
             case 3:
             modify();
             break;
@@ -600,8 +603,13 @@ void menu(){
             case 11:
             print();
             break;
-
+            
             case 12:
+            delete_multi();
+            break;
+
+
+            case 13:
             quit_program();
             break;
 
@@ -1097,4 +1105,127 @@ void report(void) {
         printf("%s", line);
     }
     fclose(file);  
+}
+
+void delete_multi(void) {
+    int choice;
+
+    printf("\nDELETE MULTIPLE ACCOUNTS\n");
+    printf("1. By Date (YYYY-MM-DD)\n");
+    printf("2. Inactive accounts > 90 days with zero balance\n");
+    printf("Enter choice: ");
+    scanf("%d", &choice);
+
+    switch(choice) {
+        case 1:
+            deleteByDate();
+            break;
+        case 2:
+            deleteInactive();
+            break;
+        default:
+            printf("Invalid choice.\n");
+    }
+}
+
+void deleteByDate(void) {
+    int month, year, day;
+    int deleted = 0;
+
+    printf("Enter date (YYYY-MM-DD): ");
+    scanf("%d-%d-%d", &year, &month, &day);
+    FILE *fp = fopen("accounts.txt", "r");
+    FILE *temp = fopen("temp.txt", "w");
+
+    if(!fp || !temp) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    char line[512];
+    while(fgets(line, sizeof(line), fp)) {
+        char copy[512];
+        strcpy(copy, line);
+
+        strtok(copy, ","); // acc num
+        strtok(NULL, ","); // name
+        strtok(NULL, ","); // address
+        strtok(NULL, ","); // balance
+        strtok(NULL, ","); // mobile
+        char *date = strtok(NULL, ","); // MM-YYYY
+
+        int acc_month, acc_year;
+        sscanf(date, "%d-%d", &acc_month, &acc_year);
+
+        if(acc_month == month && acc_year == year) {
+            deleted++;   
+        } else {
+            fputs(line, temp);
+        }
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    if(deleted == 0) {
+        printf("No account created on the given date.\n");
+        remove("temp.txt");
+    } else {
+        remove("accounts.txt");
+        rename("temp.txt", "accounts.txt");
+        printf("Deleted %d account(s) successfully.\n", deleted);
+    }
+}
+
+void deleteInactive(void) {
+    int deleted = 0;
+    date today = getCurrentDate();
+
+    FILE *fp = fopen("accounts.txt", "r");
+    FILE *temp = fopen("temp.txt", "w");
+
+    if(!fp || !temp) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    char line[512];
+    while(fgets(line, sizeof(line), fp)) {
+        char copy[512];
+        strcpy(copy, line);
+
+        strtok(copy, ","); // acc num
+        strtok(NULL, ","); // name
+        strtok(NULL, ","); // address
+        char *bal = strtok(NULL, ",");
+        strtok(NULL, ","); // mobile
+        char *date = strtok(NULL, ","); // MM-YYYY
+        char *status = strtok(NULL, ",");
+
+        double balance = atof(bal);
+        int m, y;
+        sscanf(date, "%d-%d", &m, &y);
+
+        int months_diff = (today.year - y) * 12 + (today.month - m);
+
+        if(strcmp(status, "inactive") == 0 &&
+           balance == 0 &&
+           months_diff > 3) {
+            deleted++;
+        } else {
+            fputs(line, temp);
+        }
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    if(deleted == 0) {
+        printf("No inactive accounts for more than 90 days with zero balance.\n");
+        remove("temp.txt");
+    } else {
+        remove("accounts.txt");
+        rename("temp.txt", "accounts.txt");
+        printf("Deleted %d inactive account(s).\n", deleted);
+    }
 }
