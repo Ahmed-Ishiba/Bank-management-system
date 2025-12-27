@@ -1,58 +1,65 @@
 #ifndef BANK_SYS_H
 #define BANK_SYS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 typedef struct{
-    int day;
     int month;
     int year;
+    
 }date;
 
 typedef struct {
-    char accountNumber[10];   
+    char account_num[20];
     char name[50];
-    char email[50];
-    char mobile[11];
-    double balance;
-    date dateOpened;
-    int status;
-    double dailyWithdraw;
-} account; 
+    char address[100];
+    float balance;
+    char mobile[15];
+    date openingDate;
+    char date_opened[15];
+    char status[10];
+} account;
 
 extern int check_exist(double acc_num);
 extern int check_status(double acc_num);
 extern int check_accountNumbers(double acc_num_1, double acc_num_2);
 
-
 extern void bank_system_init(void);
 
-extern void login(void);
+extern int login(void); //////TOCHECK
+
+extern date getCurrentDate(void);
 
 extern void Load(void);
 
 extern void query_search(double acc_num);
 
-extern void advanced_search(char name[]);
+extern void search(void);
+
+extern void printAccounts(account arr[], int n);
+
+extern void Advanced_search(void);
 
 extern void add(void);
 
-extern void delete(double acc_num);
+extern void Delete(void);
 
-extern void modify(double acc_num);
+extern void modify(void);
 
-extern void change_status(double acc_num);
+extern void change_status(void);
 
-extern void check_limit(double acc_num);
+extern int CheckDailyLimit(double currentDailyLimit, double amount);
 
-extern void withdraw(double acc_num, double amount);
+extern void Withdraw(void);
 
-extern void deposit(double acc_num, double amount);
+extern void deposit(void);
 
-extern void transfer(double from_acc, double to_acc, double amount);
+extern void Transfer(void);
 
-extern void report(int acc_num);
-
-extern void print(int acc_num);
+extern void print(void);
 
 extern void save(void);
 
@@ -60,7 +67,15 @@ extern void quit(void);
 
 extern void menu(void);
 
+extern void setColor(int color);
+
 extern void delete_multi(void);
 
+extern void report(void);
+
+extern void sortByName(account arr[], int n);
+extern void sortByBalance(account arr[], int n);
+extern void sortByDate(account arr[], int n);
+extern void quit_program(void);
 
 #endif // BANK_SYS_H
