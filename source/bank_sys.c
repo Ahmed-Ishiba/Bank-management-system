@@ -155,13 +155,22 @@ void add (){
     while (fgets(line, sizeof(line), check_fp)) {
         char temp[256];
         strcpy(temp, line);
-        char *token = strtok(temp, ","); // account number
+        char *token = strtok(temp, ","); 
         if (strcmp(token, acc.account_num) == 0) {
             printf("Error: Account number %s already exists.\n", acc.account_num);
             fclose(fp);
             fclose(check_fp);
             return;
         }
+        size_t q;
+        for(q=0; q<strlen(acc.account_num); q++){
+        if(isalpha((unsigned char)acc.account_num[q])){
+            printf("Account number must be a digit.\n");
+            fclose(fp);
+            fclose(check_fp);
+            return;
+        }
+    }
     }
 
     printf("Enter name: ");
