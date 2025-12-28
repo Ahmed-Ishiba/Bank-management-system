@@ -1,6 +1,6 @@
 #include "bank_sys.h"
 #include <ctype.h>
-
+#include "colors.h"
 account acc[100];
 
 double dailywithdraw[100] = {0};
@@ -26,7 +26,7 @@ void Load() {
    
     FILE *file = fopen("accounts.txt", "r");
     if (file == NULL) {
-        printf("Error opening file.\n");
+        printf(REDB"Error opening file.\n");
         return;
     }
 
@@ -61,7 +61,7 @@ void Load() {
     }
 
     fclose(file);
-    printf("Loaded %d accounts from file successfully\n", count);
+    printf(BOLD GRNB"Loaded %d accounts from file successfully"RESET"\n", count);
 }
 void bank_system_init(void) {
     // Initialization code for the bank system
@@ -71,7 +71,7 @@ void bank_system_init(void) {
 
 int login() ///////TOCHECK
 {
-    printf("=== Login ===\n");
+    printf(BOLD CYNB"=== Login ==="RESET"\n");
     FILE *file;
     char username[50];
     char password[50];
@@ -85,7 +85,7 @@ int login() ///////TOCHECK
     
     if (file == NULL)
     {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET"\n");
         return 0;
     }
    
@@ -97,14 +97,14 @@ int login() ///////TOCHECK
         {
             if (strcmp(username, stored_username) == 0 && strcmp(password, stored_password) == 0)
             {
-                printf("Login successful!\n");
+                printf(BOLD GRNB"Login successful!"RESET"\n\n");
                 found = 1;
                 break;
             }
         }
         fclose(file);
         if (found == 0)
-            printf("Invalid username or password, please try again.\n");
+            printf(BOLD REDB"Invalid username or password, please try again."RESET"\n");
     } while (found == 0);
 
    
@@ -131,7 +131,7 @@ void add (){
    FILE *fp = fopen("accounts.txt", "a");
     
     if (fp == NULL) {
-         printf("Error opening file.\n");
+         printf(BOLD REDB"Error opening file."RESET"\n");
          return;
     }
     account acc;
@@ -157,7 +157,7 @@ void add (){
         strcpy(temp, line);
         char *token = strtok(temp, ","); 
         if (strcmp(token, acc.account_num) == 0) {
-            printf("Error: Account number %s already exists.\n", acc.account_num);
+            printf(BOLD REDB"Error: Account number %s already exists."RESET, acc.account_num);printf("\n");
             fclose(fp);
             fclose(check_fp);
             return;
@@ -165,7 +165,7 @@ void add (){
         size_t q;
         for(q=0; q<strlen(acc.account_num); q++){
         if(isalpha((unsigned char)acc.account_num[q])){
-            printf("Account number must be a digit.\n");
+            printf(BOLD REDB"Account number must be a digit."RESET);printf("\n");
             fclose(fp);
             fclose(check_fp);
             return;
@@ -177,20 +177,20 @@ void add (){
     
     fgets(acc.name, sizeof(acc.name), stdin);
     
-    acc.name[strcspn(acc.name, "\n")] = 0; // remove newline
+    acc.name[strcspn(acc.name, "\n")] = 0; 
     
     printf("Enter address: ");
     
     fgets(acc.address, sizeof(acc.address), stdin);
-    acc.address[strcspn(acc.address, "\n")] = 0; // remove newline
+    acc.address[strcspn(acc.address, "\n")] = 0; 
     
     printf("Enter balance: ");
     scanf("%f", &acc.balance);
-    getchar(); // consume newline
+    getchar(); 
     
     printf("Enter mobile: ");
     fgets(acc.mobile, sizeof(acc.mobile), stdin);
-    acc.mobile[strcspn(acc.mobile, "\n")] = 0; // remove newline
+    acc.mobile[strcspn(acc.mobile, "\n")] = 0; 
     
     date currentDate = getCurrentDate();
     acc.openingDate.month = currentDate.month;
@@ -201,7 +201,7 @@ void add (){
     fprintf(fp, "%s,%s,%s,%.2f,%s,%02d-%04d,%s\n", acc.account_num, acc.name, acc.address, acc.balance, acc.mobile, acc.openingDate.month, acc.openingDate.year, acc.status);
     fclose(fp);
     fclose(check_fp);
-    printf("Account added successfully.\n");
+    printf(BOLD GRNB"Account added successfully."RESET);printf("\n");
     return;
 
 
@@ -212,7 +212,7 @@ void Delete() {
     FILE *fp = fopen("accounts.txt", "r");
     FILE *temp_fp = fopen("temp.txt", "w");
     if (fp == NULL || temp_fp == NULL) {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET);printf("\n");
         return;
     }
     char target[20];
@@ -235,27 +235,26 @@ void Delete() {
         }
     }
     if (count == 0) {
-        printf("Account number %s does not exist.\n", target);
+        printf(BOLD REDB"Account number %s does not exist."RESET, target);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
         return;
     }
     if (count > 1) {
-        printf("Error: duplicate account number %s found.\n", target);
+        printf(BOLD REDB"Error: duplicate account number %s found."RESET, target);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
         return;
     }
     if (balance > 0 || balance < 0) {
-        printf("Deletion rejected: account balance is greater than zero.\n");
+        printf(BOLD REDB"Deletion rejected: account balance is greater than zero."RESET);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
         return;
     }
-    /* ---------- SECOND PASS: delete ---------- */
     rewind(fp);
     while (fgets(line, sizeof(line), fp)) {
         char temp[256];
@@ -264,13 +263,13 @@ void Delete() {
         if (strcmp(token, target) != 0) {
             fputs(line, temp_fp);  // keep record
         }
-        // else → skip line (delete)
+        // else skip line (delete)
     }
     fclose(fp);
     fclose(temp_fp);
     remove("accounts.txt");
     rename("temp.txt", "accounts.txt");
-    printf("Account %s deleted successfully.\n", target);
+    printf(BOLD GRNB"Account %s deleted successfully."RESET, target);printf("\n");
     return;
 }
 
@@ -280,7 +279,7 @@ void deposit()
     
     FILE *temp_fp = fopen("temp.txt", "w");
     if (fp == NULL || temp_fp == NULL) {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET);printf("\n");
         return;
     }
     //account acc[100];
@@ -299,14 +298,14 @@ void deposit()
     float deposit_amount;
     scanf("%f", &deposit_amount);
     if (deposit_amount <= 0) {
-        printf("Deposit amount must be positive.\n");
+        printf(BOLD REDB"Deposit amount must be positive."RESET);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
         return;
     }
     else if (deposit_amount > 10000) {
-        printf("Deposit amount exceeds the limit of 10000.\n");
+        printf(BOLD REDB"Deposit amount exceeds the limit of 10000."RESET);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
@@ -326,14 +325,14 @@ void deposit()
         }
     }
     if (count == 0) {
-        printf("Account number %s does not exist.\n", target);
+        printf(BOLD REDB"Account number %s does not exist."RESET, target);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
         return;
     }
     if (balance < 0) {
-        printf("Account has negative balance. Deposit not allowed.\n");
+        printf(BOLD REDB"Account has negative balance. Deposit not allowed."RESET);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
@@ -355,7 +354,7 @@ void deposit()
             printf("Status: %s\n", status);
             if(!(strcmp(status," active")) && !(strcmp(status,"active")))
             {
-            printf("Account is not active.\n");
+            printf(BOLD REDB"Account is not active."RESET);printf("\n");
             fclose(fp);
             fclose(temp_fp);
             remove("temp.txt");
@@ -388,7 +387,7 @@ void change_status()
     FILE *fp = fopen("accounts.txt", "r");
     FILE *temp_fp = fopen("temp.txt", "w"); 
     if (fp == NULL || temp_fp == NULL) {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET);printf("\n");
         return;}
     char target[20];
     char line[256];
@@ -405,14 +404,14 @@ void change_status()
         }
     }
     if (count == 0) {
-        printf("Account number %s does not exist.\n", target);
+        printf(BOLD REDB"Account number %s does not exist."RESET, target);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
         return;
     }
     if (count > 1) {
-        printf("Error: duplicate account number %s found.\n", target);
+        printf(BOLD REDB"Error: duplicate account number %s found."RESET, target);printf("\n");
         fclose(fp);
         fclose(temp_fp);
         remove("temp.txt");
@@ -439,7 +438,7 @@ void change_status()
             if(strcmp(new_status, "Inactive") == 0 || strcmp(new_status, "inactive") == 0) {
             // Change status to " inactive"
             fprintf(temp_fp, "%s,%s,%s,%s,%s,%s, inactive\n", token, name, address, balance, mobile, date_opened);
-            printf("Account number %s status changed to Inactive.\n", target);
+            printf(BOLD GRNB"Account number %s status changed to Inactive."RESET, target);printf("\n");
             } else if(strcmp(new_status, "Active") == 0 || strcmp(new_status, "active") == 0) {
                 // Already Active
                 printf("Do you want to change the status to (Active) and it is already (Active)?\n");
@@ -448,7 +447,7 @@ void change_status()
                 scanf("%d", &choice);
                 if(choice == 1) {
                     fputs(line, temp_fp);
-                    printf("Account number %s status remains Active.\n", target);
+                    printf(BOLD GRNB"Account number %s status remains Active."RESET, target);printf("\n");
                 } else {
                     printf("No changes made to account number %s.\n", target);
                     fclose(fp);
@@ -461,7 +460,7 @@ void change_status()
             if(strcmp(new_status, "Active") == 0 || strcmp(new_status, "active") == 0) {
             // Change status to " activein9700000007"
             fprintf(temp_fp, "%s,%s,%s,%s,%s,%s, active\n", token, name, address, balance, mobile, date_opened);
-            printf("Account number %s status changed to Active.\n", target);
+            printf(BOLD GRNB"Account number %s status changed to Active."RESET, target);printf("\n");
         } else if(strcmp(new_status, "Inactive") == 0 || strcmp(new_status, "inactive") == 0) {
                 // Already Inactive
                 printf("Do you want to change the status to (Inactive) and it is already (Inactive)?\n");
@@ -495,7 +494,7 @@ void modify () {
     FILE *fp = fopen("accounts.txt", "r");
     FILE *temp_fp = fopen("temp.txt", "w");
     if (fp == NULL || temp_fp == NULL) {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET);printf("\n");
         return;
     }
     char target[20];
@@ -543,7 +542,7 @@ void modify () {
         }
     }
     if (!found) {
-        printf("Account number not found.\n");
+        printf(BOLD REDB"Account number not found."RESET);printf("\n");
         remove("temp.txt");
         return;
     }
@@ -551,36 +550,32 @@ void modify () {
     fclose(temp_fp);
     remove("accounts.txt");
     rename("temp.txt", "accounts.txt");
-    printf("Account number %s modified successfully.\n", target);
+    printf(BOLD GRNB"Account number %s modified successfully."RESET, target);printf("\n");
     return;
 }
-///////////////////////////////////////////////
-#define FOREGROUND_BLUE 0x0001
-#define FOREGROUND_RED 0x0004
-#define FOREGROUND_INTENSITY 0x0008
-///////////////////////////////////////////////
+
 void menu(){
     int choice;
     int decision;
     Load();                 
 
     while (1) {
-    setColor(FOREGROUND_RED| FOREGROUND_INTENSITY);
-    printf("-------MENU------\n");
-    setColor(FOREGROUND_BLUE| FOREGROUND_INTENSITY);
-    printf("1.ADD\n");
-    printf("2.DELETE\n");
-    printf("3.MODIFY\n");
-    printf("4.SEARCH\n");
-    printf("5.ADVANCED SEARCH\n");
-    printf("6.CHANGE STATUS\n");
-    printf("7.WITHDRAW\n");
-    printf("8.DEPOSIT\n");
-    printf("9.TRANSFER\n");
-    printf("10.REPORT\n");
-    printf("11.PRINT\n");
-    printf("12.DELETE MULTIPLE ACCOUNTS\n");
-    printf("13.QUIT\n");
+    
+    printf(BOLD CYNB"-----------MENU----------"RESET"\n");
+    
+    printf(GRN"1.ADD\n");
+    printf(GRN"2.DELETE\n");
+    printf(GRN"3.MODIFY\n");
+    printf(GRN"4.SEARCH\n");
+    printf(GRN"5.ADVANCED SEARCH\n");
+    printf(GRN"6.CHANGE STATUS\n");
+    printf(GRN"7.WITHDRAW\n");
+    printf(GRN"8.DEPOSIT\n");
+    printf(GRN"9.TRANSFER\n");
+    printf(GRN"10.REPORT\n");
+    printf(GRN"11.PRINT\n");
+    printf(GRN"12.DELETE MULTIPLE ACCOUNTS\n");
+    printf(BOLD REDB"13.QUIT"RESET"\n");
     printf("Choose an option: ");
     scanf("%d",&choice);
 
@@ -639,7 +634,7 @@ void menu(){
             break;
 
             default:
-                printf("Invalid option.\n");
+                printf(BOLD REDB"Invalid option."RESET"\n");
                 printf("Press 0 to return to menu\n");
                 printf("Press 1 to quit program\n");
                 printf("Your choice: ");
@@ -653,26 +648,26 @@ void menu(){
                     return;
                 }
                 else {
-                    printf("Invalid input. Returning to menu.\n");
+                    printf(BOLD REDB"Invalid input. Returning to menu."RESET"\n");
                 }
         }
     }
 }
 
 void quit(void) {
-    printf("Program has been terminated\n");
+    printf(BOLD REDB"Program has been terminated"RESET"\n");
     exit(0);
 }
 
 void print() {
     if(count == 0) {
-        printf("No accounts loaded.\n");
+        printf(BOLD REDB"No accounts loaded."RESET"\n");
         return;
     }
 
     int choice;
-    printf("\nChoose sorting option:\n");
-    printf("1. Name\n2. Balance\n3. Date Opened\n");
+    printf(BOLD CYNB"\nChoose sorting option:"RESET"\n");
+    printf(GRN"1. Name\n2. Balance\n3. Date Opened\n"RESET);
     printf("Enter your choice: ");
     scanf("%d", &choice);
 
@@ -687,7 +682,7 @@ void print() {
             sortByDate(acc, count);
             break;
         default:
-            printf("Invalid choice. Printing unsorted.\n");
+            printf(BOLD REDB"Invalid choice. Printing unsorted."RESET"\n");
     }
 
     printAccounts(acc, count);
@@ -709,17 +704,13 @@ void printAccounts(account arr[], int n) {
                arr[i].status);
     }
 }
-void setColor(int color) {
-    // Color output not supported on this platform
-    (void)color; // Suppress unused parameter warning
-}
 
 void save()
 {
     FILE *file = fopen("accounts.txt", "w");
     if (file == NULL)
     {
-        printf("Error saving accounts file.\n");
+        printf(BOLD REDB"Error saving accounts file."RESET"\n");
         return;
     }
 
@@ -753,7 +744,7 @@ void search()
     
     if (file == NULL)
     {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET"\n");
         return;
     }
 
@@ -803,7 +794,7 @@ void search()
 
     if (!found)
     {
-        printf("Account with Account Number %s not found.\n", searchAccountNumber);
+        printf(BOLD REDB"Account with Account Number %s not found."RESET"\n", searchAccountNumber);
     }
 }
 
@@ -821,7 +812,7 @@ void Advanced_search()
     file = fopen("accounts.txt", "r");
     if (file == NULL)
     {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET"\n");
         return;
     }
 
@@ -864,7 +855,7 @@ void Advanced_search()
             printf("Phone Number: %s\n", phoneNumber);
             printf("Date Opened: %s\n", dateopened);
             printf("Status: %s\n", status);
-            printf("--------------------------\n");
+            printf(BOLD CYNB"--------------------------"RESET"\n");
             found = 1;
         }
     }
@@ -872,7 +863,7 @@ void Advanced_search()
 
     if (!found)
     {
-        printf("Account with Account name %s not found.\n", keyword);
+        printf(BOLD REDB"Account with Account name %s not found."RESET"\n", keyword);
     }
 }
 
@@ -894,7 +885,7 @@ void Transfer(void) {
     scanf("%s", recAcc);
 
     if(strcmp(sndAcc, recAcc) == 0) {
-        printf("Sender and Receiver Account Numbers cannot be the same.\n");
+        printf(BOLD REDB"Sender and Receiver Account Numbers cannot be the same."RESET"\n");
         return;
     }
 
@@ -909,39 +900,39 @@ void Transfer(void) {
 
     // Check if accounts exist
     if(Snd_index == -1 && Rec_index == -1) {
-        printf("Both Sender and Receiver Accounts not found.\n");
+        printf(BOLD REDB"Both Sender and Receiver Accounts not found."RESET"\n");
         return;
     }
     if(Snd_index == -1) {
-        printf("Sender Account not found.\n");
+        printf(BOLD REDB"Sender Account not found."RESET"\n");
         
         return;
     }
     if(Rec_index == -1) {
-        printf("Receiver Account not found.\n");
+        printf(BOLD REDB"Receiver Account not found."RESET"\n");
         
         return;
     }
 
     // Validate transfer amount
     if(amount <= 0) {
-        printf("Transfer amount must be positive.\n");
+        printf(BOLD REDB"Transfer amount must be positive."RESET"\n");
         return;
     }
 
     // Validate account status
     if(!(strcmp(acc[Snd_index].status, " active"))) {
-        printf("Sender Account is not active.\n");
+        printf(BOLD REDB"Sender Account is not active."RESET"\n");
         return;
     }
     if(!(strcmp(acc[Rec_index].status, " active"))) {
-        printf("Receiver Account is not active.\n");
+        printf(BOLD REDB"Receiver Account is not active."RESET"\n");
         return;
     }
 
     // Validate balance
     if(acc[Snd_index].balance < amount) {
-        printf("Insufficient balance in Sender Account.\n");
+        printf(BOLD REDB"Insufficient balance in Sender Account."RESET"\n");
         return;
     }
 
@@ -949,14 +940,14 @@ void Transfer(void) {
     snprintf(send_file, sizeof(send_file), "%s.txt", sndAcc);
     FILE *send_fp = fopen(send_file, "a");
     if(!send_fp) {
-        printf("Error opening sender transaction file.\n");
+        printf(BOLD REDB"Error opening sender transaction file."RESET"\n");
         return;
     }
 
     snprintf(receive_file, sizeof(receive_file), "%s.txt", recAcc);
     FILE *receive_fp = fopen(receive_file, "a");
     if(!receive_fp) {
-        printf("Error opening receiver transaction file.\n");
+        printf(BOLD REDB"Error opening receiver transaction file."RESET"\n");
         fclose(send_fp);
         return;
     }
@@ -975,7 +966,7 @@ void Transfer(void) {
     // Save updated balances
     save();
 
-    printf("Transfer of %.2lf from Account %s to Account %s successful.\n", amount, sndAcc, recAcc);
+    printf(BOLD GRNB"Transfer of %.2lf from Account %s to Account %s successful."RESET"\n", amount, sndAcc, recAcc);
 }
 //////////////////////////////////////////////////////////////////////////
 void loadDailyWithdrawals() {
@@ -994,7 +985,7 @@ void loadDailyWithdrawals() {
 void saveDailyWithdrawals() {
     FILE *file = fopen("daily_withdrawals.txt", "w");
     if (file == NULL) {
-        printf("Error saving daily withdrawals file.\n");
+        printf(BOLD REDB"Error saving daily withdrawals file."RESET"\n");
         return;
     }
 
@@ -1023,12 +1014,12 @@ void Withdraw() {
     scanf("%lf", &amount);
 
     if (amount <= 0) {
-        printf("Invalid amount. Withdrawal amount must be positive.\n");
+        printf(BOLD REDB"Invalid amount. Withdrawal amount must be positive."RESET"\n");
         fclose(transaction_fp);
         return;
     }
     if (amount > 10000) {
-        printf("Withdrawal amount exceeds the maximum limit of 10000.\n");
+        printf(BOLD REDB"Withdrawal amount exceeds the maximum limit of 10000."RESET"\n");
         fclose(transaction_fp);
         return;
     }
@@ -1043,23 +1034,23 @@ void Withdraw() {
        }
          if(index==-1)
          {
-          printf("Account not found.\n");
+          printf(BOLD REDB"Account not found."RESET"\n");
           fclose(transaction_fp);
           return;
          }
          if(strcmp(acc[index].status,"active")!=0)
             {
-            printf("Account is not active.\n");
+            printf(BOLD REDB"Account is not active."RESET"\n");
             fclose(transaction_fp);
             return;
             }
         if (acc[index].balance < amount) {
-        printf("No enough balance.\n");
+        printf(BOLD REDB"No enough balance."RESET"\n");
         fclose(transaction_fp);
         return;
         }
         if (!CheckDailyLimit(dailywithdraw[index], amount)) {
-            printf("Daily withdrawal limit exceeded.\n");
+            printf(BOLD REDB"Daily withdrawal limit exceeded."RESET"\n");
             fclose(transaction_fp);
             return;
         }
@@ -1070,8 +1061,8 @@ void Withdraw() {
        save();
        saveDailyWithdrawals();
         
-    printf("Withdrawal of %.2lf from account %s successful, New balance: %.2lf\n", amount, accNum, acc[index].balance);
-    printf("Total withdrawn today: %.2lf\n", dailywithdraw[index]);
+    printf(BOLD GRNB"Withdrawal of %.2lf from account %s successful, New balance: %.2lf"RESET"\n", amount, accNum, acc[index].balance);
+    printf(BOLD GRNB"Total withdrawn today: %.2lf"RESET"\n", dailywithdraw[index]);
 
 
 }
@@ -1117,20 +1108,20 @@ void sortByDate(account arr[], int n) {
 }
 
 void quit_program(void) {
-    printf("Program has been terminated\n");
+    printf(BOLD GRNB"Program has been terminated"RESET"\n");
     exit(0);
 }
 
 void report(void) {
     char acc_num[50];
-    printf("=== REPORT ===\n");
+    printf(BOLD GRNB"=== REPORT ==="RESET"\n");
     printf("Enter account number: ");
     scanf("%s", acc_num);
     char buffer[100];
     snprintf(buffer, sizeof(buffer), "%s.txt",acc_num);
     FILE *file = fopen(buffer, "r");
     if (file == NULL) {
-        printf("Error opening transaction file for account %s account may be missing.\n", acc_num);
+        printf(BOLD REDB"Error opening transaction file for account %s account may be missing."RESET"\n", acc_num);
         return;
     }
     char line[100];
@@ -1158,7 +1149,7 @@ void delete_multi(void) {
             deleteInactive();
             break;
         default:
-            printf("Invalid choice.\n");
+            printf(BOLD REDB"Invalid choice."RESET"\n");
     }
 }
 
@@ -1172,7 +1163,7 @@ void deleteByDate(void) {
     FILE *temp = fopen("temp.txt", "w");
 
     if(!fp || !temp) {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET"\n");
         return;
     }
 
@@ -1202,12 +1193,12 @@ void deleteByDate(void) {
     fclose(temp);
 
     if(deleted == 0) {
-        printf("No account created on the given date.\n");
+        printf(BOLD REDB"No account created on the given date."RESET"\n");
         remove("temp.txt");
     } else {
         remove("accounts.txt");
         rename("temp.txt", "accounts.txt");
-        printf("Deleted %d account(s) successfully.\n", deleted);
+        printf(BOLD GRNB"Deleted %d account(s) successfully."RESET"\n", deleted);
     }
 }
 
@@ -1219,7 +1210,7 @@ void deleteInactive(void) {
     FILE *temp = fopen("temp.txt", "w");
 
     if(!fp || !temp) {
-        printf("Error opening file.\n");
+        printf(BOLD REDB"Error opening file."RESET"\n");
         return;
     }
 
@@ -1255,11 +1246,11 @@ void deleteInactive(void) {
     fclose(temp);
 
     if(deleted == 0) {
-        printf("No inactive accounts for more than 90 days with zero balance.\n");
+        printf(BOLD REDB"No inactive accounts for more than 90 days with zero balance."RESET"\n");
         remove("temp.txt");
     } else {
         remove("accounts.txt");
         rename("temp.txt", "accounts.txt");
-        printf("Deleted %d inactive account(s).\n", deleted);
+        printf(BOLD GRNB"Deleted %d inactive account(s)."RESET"\n", deleted);
     }
 }
